@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// GonicEngine is wrapper type for gin.Engine type
 type GonicEngine struct {
 	gonicEngine *gin.Engine
 }
@@ -18,9 +19,9 @@ func NewGonicEngine() *GonicEngine {
 	return router
 }
 
-func (e *GonicEngine) RegisterVersion(versions ...api.Version) error {
+func (e *GonicEngine) RegisterVersion(versionName string, versions ...api.Version) error {
 	for _, version := range versions {
-		routeVersion := e.gonicEngine.Group(version.Name())
+		routeVersion := e.gonicEngine.Group(versionName)
 		for _, r := range version.Router() {
 			switch r.Method {
 			case http.MethodPost:
@@ -53,4 +54,31 @@ func (e *GonicEngine) RegisterVersion(versions ...api.Version) error {
 
 func (e *GonicEngine) Execute(serve string) error {
 	return e.gonicEngine.Run(serve)
+}
+
+// GonicEngineContext is a wrapper type for gin.Context type
+type GonicEngineContext struct {
+	ctx *gin.Context
+}
+
+func WrapGinContext(ctx *gin.Context) *GonicEngineContext {
+	gonicCtx := new(GonicEngineContext)
+
+	return gonicCtx
+}
+
+func (c *GonicEngineContext) BindJSON(output interface{}) error {
+	return c.ctx.BindJSON(output)
+}
+
+func (c *GonicEngineContext) BindQuery(output interface{}) error {
+	return c.ctx.BindQuery(output)
+}
+
+func (c *GonicEngineContext) BindUri(output interface{}) error {
+	return c.ctx.Bind(output)
+}
+
+func (c *GonicEngineContext) BindForm(output interface{}) error {
+	return c.ctx.Bind(output)
 }

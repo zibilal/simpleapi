@@ -12,13 +12,11 @@ type Endpoint struct {
 }
 
 type Version struct {
-	name      string
 	endpoints []Endpoint
 }
 
-func NewVersion(name string, endpoints []Endpoint) *Version {
+func NewVersion(endpoints []Endpoint) *Version {
 	v := new(Version)
-	v.name = name
 	v.endpoints = endpoints
 	return v
 }
@@ -31,10 +29,6 @@ func (v *Version) AddEndpoint(path, method string, handler func(engineContext in
 	})
 }
 
-func (v *Version) Name() string {
-	return v.name
-}
-
 func (v *Version) Router() []Endpoint {
 	return v.endpoints
 }
@@ -44,4 +38,9 @@ type EngineContext interface {
 	BindQuery(output interface{}) error
 	BindUri(output interface{}) error
 	BindForm(output interface{}) error
+}
+
+type RouterEngine interface {
+	RegisterVersion(...Version) error
+	Execute(string) error
 }
