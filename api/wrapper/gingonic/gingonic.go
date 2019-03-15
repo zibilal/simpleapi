@@ -1,4 +1,4 @@
-package wrapper
+package gingonic
 
 import (
 	"errors"
@@ -26,26 +26,26 @@ func (e *GonicEngine) RegisterVersion(versionName string, versions ...api.Versio
 			switch r.Method {
 			case http.MethodPost:
 				routeVersion.POST(r.Path, func(c *gin.Context){
-					r.Handler(c)
+					r.Handler(WrapGinContext(c))
 				})
 			case http.MethodGet:
 				routeVersion.GET(r.Path, func(c *gin.Context){
-					r.Handler(c)
+					r.Handler(WrapGinContext(c))
 				})
 			case http.MethodPut:
 				routeVersion.PUT(r.Path, func(c *gin.Context) {
-					r.Handler(c)
+					r.Handler(WrapGinContext(c))
 				})
 			case http.MethodDelete:
 				routeVersion.DELETE(r.Path, func(c *gin.Context) {
-					r.Handler(c)
+					r.Handler(WrapGinContext(c))
 				})
 			case http.MethodPatch:
 				routeVersion.PATCH(r.Path, func(c *gin.Context) {
-					r.Handler(c)
+					r.Handler(WrapGinContext(c))
 				})
 			default:
-				return errors.New("invalid version " + version.Name() + " unknown method " + r.Method)
+				return errors.New("invalid version " + versionName + " unknown method " + r.Method)
 			}
 		}
 	}
@@ -63,6 +63,7 @@ type GonicEngineContext struct {
 
 func WrapGinContext(ctx *gin.Context) *GonicEngineContext {
 	gonicCtx := new(GonicEngineContext)
+	gonicCtx.ctx = ctx
 
 	return gonicCtx
 }
@@ -81,4 +82,8 @@ func (c *GonicEngineContext) BindUri(output interface{}) error {
 
 func (c *GonicEngineContext) BindForm(output interface{}) error {
 	return c.ctx.Bind(output)
+}
+
+func (c *GonicEngineContext) UnwrapContext() interface{} {
+	return c.ctx
 }

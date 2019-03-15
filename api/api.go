@@ -8,7 +8,7 @@ type Engine interface {
 type Endpoint struct {
 	Path    string
 	Method  string
-	Handler func(engineContext interface{})
+	Handler func(engineContext EngineContext)
 }
 
 type Version struct {
@@ -21,7 +21,7 @@ func NewVersion(endpoints []Endpoint) *Version {
 	return v
 }
 
-func (v *Version) AddEndpoint(path, method string, handler func(engineContext interface{})) {
+func (v *Version) AddEndpoint(path, method string, handler func(engineContext EngineContext)) {
 	v.endpoints = append(v.endpoints, Endpoint{
 		Path:    path,
 		Method:  method,
@@ -38,6 +38,7 @@ type EngineContext interface {
 	BindQuery(output interface{}) error
 	BindUri(output interface{}) error
 	BindForm(output interface{}) error
+	UnwrapContext() interface{}
 }
 
 type RouterEngine interface {
