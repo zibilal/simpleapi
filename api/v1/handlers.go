@@ -14,5 +14,5 @@ func VersionOneApi() *api.Version {
 			},
 		},
 	}
-	return api.NewVersion("v1", endpoints)
+	return api.NewVersion(endpoints)
 }

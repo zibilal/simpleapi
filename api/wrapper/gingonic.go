@@ -3,6 +3,7 @@ package wrapper
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo"
 	"github.com/zibilal/simpleapi/api"
 	"net/http"
 )
@@ -26,30 +27,53 @@ func (e *GonicEngine) RegisterVersion(versionName string, versions ...api.Versio
 			switch r.Method {
 			case http.MethodPost:
 				routeVersion.POST(r.Path, func(c *gin.Context){
-					r.Handler(c)
+					_ = r.Handler(WrapGinContext(c))
 				})
 			case http.MethodGet:
 				routeVersion.GET(r.Path, func(c *gin.Context){
-					r.Handler(c)
+					_ = r.Handler(WrapGinContext(c))
 				})
 			case http.MethodPut:
 				routeVersion.PUT(r.Path, func(c *gin.Context) {
-					r.Handler(c)
+					_ = r.Handler(WrapGinContext(c))
 				})
 			case http.MethodDelete:
 				routeVersion.DELETE(r.Path, func(c *gin.Context) {
-					r.Handler(c)
+					_ = r.Handler(WrapGinContext(c))
 				})
 			case http.MethodPatch:
 				routeVersion.PATCH(r.Path, func(c *gin.Context) {
-					r.Handler(c)
+					_ = r.Handler(WrapGinContext(c))
 				})
 			default:
-				return errors.New("invalid version " + version.Name() + " unknown method " + r.Method)
+				return errors.New("invalid version " + versionName	 + " unknown method " + r.Method)
 			}
 		}
 	}
 	return nil
+}
+
+func (e *GonicEngine) wrapHandler(handler api.ApiHandlerFunc, middlewares ...api.ApiHandlerFunc) []gin.HandlerFunc {
+	var result []gin.HandlerFunc
+
+	if handler == nil {
+		return nil
+	}
+
+	result = make([]gin.HandlerFunc, 0)
+
+	for _, m := range middlewares {
+		result = append(result, func(c *gin.Context) {
+			err := m(WrapGinContext(c))
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, )
+			}
+		})
+	}
+
+	result = append(result, func(c *gin.Context) {
+		_ = handler(WrapGinContext(c))
+	})
 }
 
 func (e *GonicEngine) Execute(serve string) error {
@@ -63,7 +87,7 @@ type GonicEngineContext struct {
 
 func WrapGinContext(ctx *gin.Context) *GonicEngineContext {
 	gonicCtx := new(GonicEngineContext)
-
+	gonicCtx.ctx = ctx
 	return gonicCtx
 }
 
