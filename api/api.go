@@ -1,32 +1,50 @@
 package api
 
-type Engine interface {
-	RegisterVersion(versions ...Version) error
-	Execute(serve string) error
+import "context"
+
+type ApiEngine interface {
+	RegisterVersion(versions ...*Version) error
+	Execute() error
+	Shutdown(ctx context.Context) error
 }
 
 type Endpoint struct {
 	Path    string
 	Method  string
-	Handler func(engineContext EngineContext)
+	Handler ApiHandlerFunc
+	Middlewares []ApiHandlerFunc
 }
 
 type Version struct {
 	endpoints []Endpoint
+	versionName string
 }
 
-func NewVersion(endpoints []Endpoint) *Version {
+func NewVersion(versionName string, endpoints []Endpoint) *Version {
 	v := new(Version)
 	v.endpoints = endpoints
+	v.versionName = versionName
 	return v
 }
 
-func (v *Version) AddEndpoint(path, method string, handler func(engineContext EngineContext)) {
+
+func (v *Version) Name() string {
+	return v.versionName
+}
+
+func (v *Version) AddEndpoint(path, method string, handler ApiHandlerFunc, middlewares ...ApiHandlerFunc) {
 	v.endpoints = append(v.endpoints, Endpoint{
 		Path:    path,
 		Method:  method,
 		Handler: handler,
+		Middlewares: middlewares,
 	})
+}
+
+type ApiHandlerFunc func(EngineContext) error
+
+type ApiResponder interface {
+	Response() interface{}
 }
 
 func (v *Version) Router() []Endpoint {
@@ -39,9 +57,4 @@ type EngineContext interface {
 	BindUri(output interface{}) error
 	BindForm(output interface{}) error
 	UnwrapContext() interface{}
-}
-
-type RouterEngine interface {
-	RegisterVersion(...Version) error
-	Execute(string) error
 }

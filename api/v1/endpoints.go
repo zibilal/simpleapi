@@ -12,7 +12,10 @@ func VersionOneApi() *api.Version {
 			Path: "/ping",
 			Method: http.MethodGet,
 			Handler: handlers.PingApi,
+			Middlewares: []api.ApiHandlerFunc {
+				handlers.MiddlewareTest,
+			},
 		},
 	}
-	return api.NewVersion(endpoints)
+	return api.NewVersion("v1", endpoints)
 }

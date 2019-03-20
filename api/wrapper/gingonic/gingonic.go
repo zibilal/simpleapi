@@ -1,59 +1,88 @@
 package gingonic
 
 import (
+	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/zibilal/logwrapper"
 	"github.com/zibilal/simpleapi/api"
 	"net/http"
 )
 
-// GonicEngine is wrapper type for gin.Engine type
+// GonicEngine is wrapper type for gin.ApiEngine type
 type GonicEngine struct {
 	gonicEngine *gin.Engine
+	httpServer *http.Server
 }
 
-func NewGonicEngine() *GonicEngine {
+func NewGonicEngine(address string) *GonicEngine {
 	router := new(GonicEngine)
 	router.gonicEngine = gin.Default()
 
+	router.httpServer = &http.Server{
+		Addr: address,
+		Handler: router.gonicEngine,
+	}
 	return router
 }
 
-func (e *GonicEngine) RegisterVersion(versionName string, versions ...api.Version) error {
+func (e *GonicEngine) RegisterVersion(versions ...*api.Version) error {
 	for _, version := range versions {
-		routeVersion := e.gonicEngine.Group(versionName)
+		routeVersion := e.gonicEngine.Group(version.Name())
 		for _, r := range version.Router() {
+			handlers := e.wrapHandler(r.Handler, r.Middlewares...)
 			switch r.Method {
 			case http.MethodPost:
-				routeVersion.POST(r.Path, func(c *gin.Context){
-					r.Handler(WrapGinContext(c))
-				})
+				routeVersion.POST(r.Path, handlers...)
 			case http.MethodGet:
-				routeVersion.GET(r.Path, func(c *gin.Context){
-					r.Handler(WrapGinContext(c))
-				})
+				routeVersion.GET(r.Path, handlers...)
 			case http.MethodPut:
-				routeVersion.PUT(r.Path, func(c *gin.Context) {
-					r.Handler(WrapGinContext(c))
-				})
+				routeVersion.PUT(r.Path, handlers...)
 			case http.MethodDelete:
-				routeVersion.DELETE(r.Path, func(c *gin.Context) {
-					r.Handler(WrapGinContext(c))
-				})
+				routeVersion.DELETE(r.Path, handlers...)
 			case http.MethodPatch:
-				routeVersion.PATCH(r.Path, func(c *gin.Context) {
-					r.Handler(WrapGinContext(c))
-				})
+				routeVersion.PATCH(r.Path, handlers...)
 			default:
-				return errors.New("invalid version " + versionName + " unknown method " + r.Method)
+				return errors.New("invalid version " + version.Name()	 + " unknown method " + r.Method)
 			}
 		}
 	}
 	return nil
 }
 
-func (e *GonicEngine) Execute(serve string) error {
-	return e.gonicEngine.Run(serve)
+func (e *GonicEngine) wrapHandler(handler api.ApiHandlerFunc, middlewares ...api.ApiHandlerFunc) []gin.HandlerFunc {
+	var result []gin.HandlerFunc
+
+	if handler == nil {
+		return nil
+	}
+
+	result = make([]gin.HandlerFunc, 0)
+
+	for _, m := range middlewares {
+		result = append(result, func(c *gin.Context) {
+			logwrapper.Info("middleware")
+			err := m(WrapGinContext(c))
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+			}
+		})
+	}
+
+	result = append(result, func(c *gin.Context) {
+		logwrapper.Info("handler")
+		_ = handler(WrapGinContext(c))
+	})
+
+	return result
+}
+
+func (e *GonicEngine) Execute() error {
+	return e.httpServer.ListenAndServe()
+}
+
+func (e *GonicEngine) Shutdown(ctx context.Context) error {
+	return e.httpServer.Shutdown(ctx)
 }
 
 // GonicEngineContext is a wrapper type for gin.Context type
@@ -64,7 +93,6 @@ type GonicEngineContext struct {
 func WrapGinContext(ctx *gin.Context) *GonicEngineContext {
 	gonicCtx := new(GonicEngineContext)
 	gonicCtx.ctx = ctx
-
 	return gonicCtx
 }
 
