@@ -1,18 +1,17 @@
 package gingonic
 
 import (
+	"github.com/zibilal/simpleapi/api"
 	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/zibilal/logwrapper"
-	"github.com/zibilal/simpleapi/api"
 	"net/http"
 )
 
 // GonicEngine is wrapper type for gin.ApiEngine type
 type GonicEngine struct {
 	gonicEngine *gin.Engine
-	httpServer *http.Server
+	httpServer  *http.Server
 }
 
 func NewGonicEngine(address string) *GonicEngine {
@@ -20,7 +19,7 @@ func NewGonicEngine(address string) *GonicEngine {
 	router.gonicEngine = gin.Default()
 
 	router.httpServer = &http.Server{
-		Addr: address,
+		Addr:    address,
 		Handler: router.gonicEngine,
 	}
 	return router
@@ -43,7 +42,7 @@ func (e *GonicEngine) RegisterVersion(versions ...*api.Version) error {
 			case http.MethodPatch:
 				routeVersion.PATCH(r.Path, handlers...)
 			default:
-				return errors.New("invalid version " + version.Name()	 + " unknown method " + r.Method)
+				return errors.New("invalid version " + version.Name() + " unknown method " + r.Method)
 			}
 		}
 	}
@@ -61,7 +60,6 @@ func (e *GonicEngine) wrapHandler(handler api.ApiHandlerFunc, middlewares ...api
 
 	for _, m := range middlewares {
 		result = append(result, func(c *gin.Context) {
-			logwrapper.Info("middleware")
 			err := m(WrapGinContext(c))
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
@@ -70,7 +68,6 @@ func (e *GonicEngine) wrapHandler(handler api.ApiHandlerFunc, middlewares ...api
 	}
 
 	result = append(result, func(c *gin.Context) {
-		logwrapper.Info("handler")
 		_ = handler(WrapGinContext(c))
 	})
 
@@ -110,6 +107,28 @@ func (c *GonicEngineContext) BindUri(output interface{}) error {
 
 func (c *GonicEngineContext) BindForm(output interface{}) error {
 	return c.ctx.Bind(output)
+}
+
+func (c *GonicEngineContext) Set(key string, value interface{}) {
+	c.ctx.Set(key, value)
+}
+
+func (c *GonicEngineContext) Get(key string) interface{} {
+	val, exist := c.ctx.Get(key)
+	if !exist {
+		return nil
+	}
+
+	return val
+}
+
+func (c *GonicEngineContext) JSON(status int, response interface{}) error {
+	c.ctx.JSON(status, response)
+	return nil
+}
+
+func (c *GonicEngineContext) SetHeader(key, value string) {
+	c.ctx.Header(key, value)
 }
 
 func (c *GonicEngineContext) UnwrapContext() interface{} {

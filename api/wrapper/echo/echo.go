@@ -1,11 +1,11 @@
 package echo
 
 import (
+	"github.com/zibilal/simpleapi/api"
 	"context"
 	"errors"
 	"github.com/labstack/echo"
 	logger "github.com/zibilal/logwrapper"
-	"github.com/zibilal/simpleapi/api"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -13,7 +13,7 @@ import (
 
 // EchoEngine is wrapper type for echo.Echo type
 type EchoEngine struct {
-	address string
+	address    string
 	echoEngine *echo.Echo
 }
 
@@ -123,6 +123,26 @@ func (c *EchoEngineContext) BindForm(output interface{}) error {
 
 func (c *EchoEngineContext) UnwrapContext() interface{} {
 	return c.ctx
+}
+
+func (c *EchoEngineContext) Set(key string, value interface{}) {
+	c.ctx.Set(key, value)
+}
+
+func (c *EchoEngineContext) Get(key string) interface{} {
+	return c.ctx.Get(key)
+}
+
+func (c *EchoEngineContext) SetStatusCode(status int) {
+	c.ctx.Response().WriteHeader(status)
+}
+
+func (c *EchoEngineContext) JSON(code int, response interface{}) error {
+	return c.ctx.JSON(code, response)
+}
+
+func (c *EchoEngineContext) SetHeader(key, value string) {
+	c.ctx.Response().Header().Set(key, value)
 }
 
 func (c *EchoEngineContext) simpleIterateType(tagName string, output interface{}) error {

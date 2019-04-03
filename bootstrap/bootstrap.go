@@ -1,5 +1,6 @@
 package bootstrap
 
-type Bootstrap interface{
+type Bootstrap interface {
+	Init() error
 	Run()
 }
