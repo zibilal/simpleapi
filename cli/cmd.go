@@ -6,7 +6,7 @@ import (
 )
 
 func Execute() {
-	var rootCmd = &cobra.Command{Use: "microservice_order_history"}
+	var rootCmd = &cobra.Command{Use: "simpleapi"}
 
 	ExecuteServeHttp(rootCmd)
 
