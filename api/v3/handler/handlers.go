@@ -12,7 +12,7 @@ func PingApi(engineContext api.EngineContext) error {
 	val := engineContext.Get("MID")
 	if val != nil {
 		sval := val.(string)
-		rsp := response.NewVersionOneBaseResponse(1000, "With Middleware " + sval)
+		rsp := response.NewVersionOneBaseResponse(1000, "With Middleware "+sval)
 
 		return engineContext.JSON(http.StatusOK, rsp)
 	}

@@ -1,9 +1,9 @@
 package cli
 
 import (
-	"github.com/zibilal/simpleapi/bootstrap/httpserver"
 	"github.com/spf13/cobra"
 	"github.com/zibilal/logwrapper"
+	"github.com/zibilal/simpleapi/bootstrap/httpserver"
 )
 
 func ExecuteServeHttp(rootCmd *cobra.Command) {

@@ -16,18 +16,18 @@ func PingApi(engineContext api.EngineContext) error {
 		return errors.New("wrong handler implementation. Please check your api implementation")
 	}
 
-	val , found := eCtx.Get("MID")
+	val, found := eCtx.Get("MID")
 
 	if found {
 		eCtx.JSON(200, gin.H{
-			"code": 1000,
+			"code":    1000,
 			"message": val.(string),
 		})
 		return nil
 	}
 
-	eCtx.JSON(200, gin.H {
-		"code": 1000,
+	eCtx.JSON(200, gin.H{
+		"code":    1000,
 		"message": "success",
 	})
 
@@ -44,7 +44,6 @@ func MiddlewareTest(engineContext api.EngineContext) error {
 	}
 
 	eCtx.Set("MID", "here")
-
 
 	return nil
 }

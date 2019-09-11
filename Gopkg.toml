@@ -29,9 +29,9 @@
   name = "github.com/spf13/cobra"
   version = "0.0.3"
 
-[[constraint]]
-  name = "bitbucket.org/kudoindonesia/terracotta_data_access_library"
-  source = "git@bitbucket.org:kudoindonesia/terracotta_data_access_library.git"
+# [[constraint]]
+#  name = "github.com/zibilal/datacabinet"
+#  source = "git@bitbucket.org:kudoindonesia/terracotta_data_access_library.git"
 
 [prune]
   go-tests = true

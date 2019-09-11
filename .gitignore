@@ -3,7 +3,7 @@
 .idea
 vendor
 dbdata
-simpleapi
+simpleapi*
 Gopkg.lock
 **/app.yml
 **/App.yaml

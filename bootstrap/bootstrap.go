@@ -1,6 +1,9 @@
 package bootstrap
 
+import "github.com/zibilal/simpleapi/appctx"
+
 type Bootstrap interface {
 	Init() error
-	Run()
+	Run() error
+	ApplicationContext() *appctx.AppContext
 }

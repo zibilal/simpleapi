@@ -7,12 +7,12 @@ import (
 )
 
 func VersionOneApi() *api.Version {
-	endpoints := []api.Endpoint {
+	endpoints := []api.Endpoint{
 		{
-			Path: "/ping",
-			Method: http.MethodGet,
+			Path:    "/ping",
+			Method:  http.MethodGet,
 			Handler: handlers.PingApi,
-			Middlewares: []api.ApiHandlerFunc {
+			Middlewares: []api.ApiHandlerFunc{
 				handlers.MiddlewareTest,
 			},
 		},

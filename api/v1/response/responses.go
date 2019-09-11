@@ -2,7 +2,7 @@ package response
 
 type VersionOneBaseResponse struct {
 	Code    int         `json:"code"`
-	Message interface{}  `json:"message"`
+	Message interface{} `json:"message"`
 }
 
 func NewVersionOneBaseResponse(code int, msg interface{}) *VersionOneBaseResponse {
@@ -13,6 +13,6 @@ func NewVersionOneBaseResponse(code int, msg interface{}) *VersionOneBaseRespons
 	return v1Response
 }
 
-func (r *VersionOneBaseResponse) Response() interface{}{
+func (r *VersionOneBaseResponse) Response() interface{} {
 	return r
 }

@@ -1,10 +1,10 @@
 package gingonic
 
 import (
-	"github.com/zibilal/simpleapi/api"
 	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/zibilal/simpleapi/api"
 	"net/http"
 )
 

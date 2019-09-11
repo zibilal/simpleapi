@@ -1,12 +1,13 @@
 package httpserver
 
 import (
+	"context"
+	"errors"
+	"github.com/zibilal/logwrapper"
 	"github.com/zibilal/simpleapi/api"
 	"github.com/zibilal/simpleapi/api/v3"
 	"github.com/zibilal/simpleapi/api/wrapper/gingonic"
 	"github.com/zibilal/simpleapi/appctx"
-	"context"
-	"github.com/zibilal/logwrapper"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,12 +19,11 @@ type HttpServerBootstrap struct {
 	address   string
 
 	services map[string]interface{}
-	appCtx   *appctx.AppContext
+	serverContext   *appctx.AppContext
 }
 
 func NewHttpServerBootstrap() *HttpServerBootstrap {
 	httpServer := new(HttpServerBootstrap)
-	httpServer.appCtx = appctx.GetAppContext()
 	return httpServer
 }
 
@@ -36,11 +36,30 @@ func (s *HttpServerBootstrap) registerVersions() error {
 	return nil
 }
 
+func (s *HttpServerBootstrap) Init() error {
+	s.serverContext= appctx.NewAppContext()
+
+	file, err := os.Open(appctx.DefaultConfigFlagVal)
+	if err != nil {
+		return err
+	}
+	err = s.serverContext.LoadAppContext(file)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *HttpServerBootstrap) Run() error {
-	// Start the server engine
+
+	if s.serverContext == nil {
+		return errors.New("bootstrap have not calling Init yet")
+	}
 
 	go func() {
-		s.apiEngine = gingonic.NewGonicEngine(s.appCtx.Config.Address)
+		s.apiEngine = gingonic.NewGonicEngine(s.serverContext.Config.Address)
 		err := s.registerVersions()
 		if err != nil {
 			panic(err)

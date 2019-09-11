@@ -1,15 +1,15 @@
 package gingonic
 
 import (
-	"github.com/zibilal/simpleapi/api/v3/handler"
 	"github.com/gin-gonic/gin"
+	"github.com/zibilal/simpleapi/api/v3/handler"
 	"io/ioutil"
 	"net/http/httptest"
 	"testing"
 )
 
-const(
-	failed = "\u2717"
+const (
+	failed  = "\u2717"
 	success = "\u2713"
 )
 

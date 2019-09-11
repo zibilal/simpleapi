@@ -1,22 +1,17 @@
 package appctx
 
 import (
-	"bitbucket.org/kudoindonesia/terracotta_data_access_library"
-	"bitbucket.org/kudoindonesia/terracotta_data_access_library/mongoconnector"
-	"bitbucket.org/kudoindonesia/terracotta_data_access_library/persistence"
-	"bitbucket.org/kudoindonesia/terracotta_data_access_library/persistence/mongodbpersistence"
 	"bytes"
-	"context"
+	"github.com/zibilal/datacabinet"
+	"github.com/zibilal/datacabinet/persistence"
 	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
-	"os"
 	"sync"
-	"time"
 )
 
 const (
-	defaultConfigFlagVal = "configurations/App.yaml"
+	DefaultConfigFlagVal = "configurations/App.yaml"
 )
 
 type Config struct {
@@ -59,47 +54,13 @@ func (c *AppContext) LoadAppContext(readers ...io.Reader) error {
 }
 
 var (
-	instance *AppContext
+	Instance *AppContext
 	once     sync.Once
 )
 
 func GetAppContext() *AppContext {
-	once.Do(func() {
-		instance = NewAppContext()
-
-		file, err := os.Open(defaultConfigFlagVal)
-		if err != nil {
-			panic(err)
-		}
-		err = instance.LoadAppContext(file)
-
-		if instance.Config.Mode != "mock" {
-
-			if err != nil {
-				panic(err)
-			}
-			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(instance.Config.Database.Timeout)*time.Second)
-			defer cancel()
-
-			// 1. Setup mongodb connector
-			conn, err := mongoconnector.NewMongodbConnector(ctx, instance.Config.Database.ConnectionString)
-			if err != nil {
-				panic(err)
-			}
-
-			err = conn.Connect(ctx)
-			if err != nil {
-				panic(err)
-			}
-
-			instance.DataConnector = conn
-
-			// 2. Setup mongodb persistence
-			instance.Persistence = mongodbpersistence.NewMongoPersistence(conn.Context(), instance.Config.Database.Name)
-		}
-
-
-	})
-
-	return instance
+	if Instance == nil {
+		panic("Application Context has not been initialized yet")
+	}
+	return Instance
 }
