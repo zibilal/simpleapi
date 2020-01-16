@@ -6,5 +6,5 @@ import "context"
 // All service types must contain Serve function
 
 type Service interface {
-	Serve(ctx context.Context, inputOutput ...interface{}) (errorCode int, errorMessage error)
+	Serve(ctx context.Context, input interface{}, output interface{}, status chan<- error)
 }
